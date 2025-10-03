@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Sparkles, Wand2, Circle } from 'lucide-react';
+import { useState, FormEvent } from 'react';
+import { Sparkles, Wand2, Circle, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
+import { AIService } from '../services/aiService';
 
 export type ImportanceLevel = 'small' | 'medium' | 'large';
 
@@ -35,13 +36,48 @@ const TASK_SUGGESTIONS = [
 export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTaskDialogProps) {
   const [taskTitle, setTaskTitle] = useState('');
   const [importance, setImportance] = useState<ImportanceLevel>('medium');
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (taskTitle.trim()) {
-      onCreateTask(taskTitle.trim(), importance);
-      setTaskTitle('');
-      setImportance('medium');
+      setIsGenerating(true);
+      
+      try {
+        // Use AI to automatically break down the task
+        if (AIService.isConfigured()) {
+          console.log('🤖 Attempting AI task breakdown...');
+          const suggestion = await AIService.generateTaskBreakdown(taskTitle.trim(), importance);
+          console.log('✅ AI breakdown successful');
+          onCreateTask(taskTitle.trim(), importance, suggestion.steps);
+        } else {
+          console.log('⚠️ AI not configured, using fallback');
+          onCreateTask(taskTitle.trim(), importance);
+        }
+        
+        setTaskTitle('');
+        setImportance('medium');
+        setIsGenerating(false);
+      } catch (error: any) {
+        console.error('❌ AI Service Error:', error.message || error);
+        
+        // Show user-friendly error message
+        if (error.message?.includes('401')) {
+          console.warn('🔑 API authentication failed - check your OpenRouter API key');
+        } else if (error.message?.includes('403')) {
+          console.warn('🚫 API access forbidden - check your permissions');
+        } else if (error.message?.includes('429')) {
+          console.warn('⏰ Rate limit exceeded - please try again later');
+        } else {
+          console.warn('🌐 Network or API error - falling back to default behavior');
+        }
+        
+        // Fallback to creating task without AI breakdown
+        onCreateTask(taskTitle.trim(), importance);
+        setTaskTitle('');
+        setImportance('medium');
+        setIsGenerating(false);
+      }
     }
   };
 
@@ -165,11 +201,20 @@ export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTas
             </Button>
             <Button
               type="submit"
-              disabled={!taskTitle.trim()}
+              disabled={!taskTitle.trim() || isGenerating}
               className="bg-gradient-to-r from-pink-300 to-orange-300 dark:from-pink-400 dark:to-orange-400 hover:from-pink-400 hover:to-orange-400 dark:hover:from-pink-500 dark:hover:to-orange-500 text-white rounded-xl shadow-lg"
             >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Plant Star
+              {isGenerating ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {AIService.isConfigured() ? 'AI is creating steps...' : 'Creating Planet...'}
+                </div>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {AIService.isConfigured() ? 'Create with AI' : 'Plant Star'}
+                </>
+              )}
             </Button>
           </div>
         </form>

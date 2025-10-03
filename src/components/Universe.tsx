@@ -119,8 +119,13 @@ export function Universe() {
   const [grandmaMessage, setGrandmaMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  const handleCreateTask = (title: string, importance: ImportanceLevel) => {
-    const steps = breakdownTask(title);
+  const handleCreateTask = (title: string, importance: ImportanceLevel, aiSteps?: string[]) => {
+    // Use AI steps if provided, otherwise fall back to default breakdown
+    const steps = aiSteps ? aiSteps.map((step, index) => ({
+      id: `step-${Date.now()}-${index}`,
+      text: step,
+      completed: false
+    })) : breakdownTask(title);
 
     const newTask: Task = {
       id: `task-${Date.now()}`,
@@ -134,7 +139,10 @@ export function Universe() {
     setTasks([...tasks, newTask]);
     setShowCreateDialog(false);
     
-    setGrandmaMessage("A beautiful new planet has bloomed in your garden, dear! ✨");
+    const message = aiSteps 
+      ? "A beautiful new planet with AI-guided steps has bloomed in your garden, dear! ✨🤖"
+      : "A beautiful new planet has bloomed in your garden, dear! ✨";
+    setGrandmaMessage(message);
     setTimeout(() => setGrandmaMessage(null), 4000);
   };
 
