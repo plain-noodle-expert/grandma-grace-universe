@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Plus, Edit } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Planet } from './Planet';
 import { TaskDetail } from './TaskDetail';
 import { GrandmaGrace } from './GrandmaGrace';
@@ -120,19 +120,22 @@ export function Universe() {
   const [showCelebration, setShowCelebration] = useState(false);
 
   const handleCreateTask = (title: string, importance: ImportanceLevel) => {
+    const steps = breakdownTask(title);
+
     const newTask: Task = {
       id: `task-${Date.now()}`,
       title,
       importance,
       planet: generatePlanetData(importance),
-      steps: breakdownTask(title),
+      steps,
       completed: false,
     };
     
     setTasks([...tasks, newTask]);
     setShowCreateDialog(false);
+    
     setGrandmaMessage("A beautiful new planet has bloomed in your garden, dear! ✨");
-    setTimeout(() => setGrandmaMessage(null), 3000);
+    setTimeout(() => setGrandmaMessage(null), 4000);
   };
 
   const handleEditTask = (taskId: string, newTitle: string, newSteps: string[]) => {
@@ -283,7 +286,7 @@ export function Universe() {
       {/* Universe header - Japanese healing style */}
       <div className="absolute top-8 left-8 z-30">
         <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl px-6 py-4 shadow-lg border border-orange-200/50 dark:border-amber-700/50">
-          <h1 className="font-medium text-amber-800 dark:text-amber-200">✨ Grandma Juan's Cosmic Garden ✨</h1>
+          <h1 className="font-medium text-amber-800 dark:text-amber-200">✨ Grandma Grace's Cosmic Garden ✨</h1>
           <p className="text-amber-600/70 dark:text-amber-300/70">Your gentle productivity universe • {tasks.length} beautiful planets</p>
         </div>
       </div>

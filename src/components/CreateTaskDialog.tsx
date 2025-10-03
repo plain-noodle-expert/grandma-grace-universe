@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Sparkles, Wand2, Circle } from 'lucide-react';
 import {
   Dialog,
@@ -17,7 +16,7 @@ export type ImportanceLevel = 'small' | 'medium' | 'large';
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateTask: (title: string, importance: ImportanceLevel) => void;
+  onCreateTask: (title: string, importance: ImportanceLevel, steps?: string[]) => void;
 }
 
 const TASK_SUGGESTIONS = [
@@ -36,20 +35,13 @@ const TASK_SUGGESTIONS = [
 export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTaskDialogProps) {
   const [taskTitle, setTaskTitle] = useState('');
   const [importance, setImportance] = useState<ImportanceLevel>('medium');
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (taskTitle.trim()) {
-      setIsGenerating(true);
-      
-      // Simulate AI processing delay
-      setTimeout(() => {
-        onCreateTask(taskTitle.trim(), importance);
-        setTaskTitle('');
-        setImportance('medium');
-        setIsGenerating(false);
-      }, 800);
+      onCreateTask(taskTitle.trim(), importance);
+      setTaskTitle('');
+      setImportance('medium');
     }
   };
 
@@ -173,56 +165,14 @@ export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTas
             </Button>
             <Button
               type="submit"
-              disabled={!taskTitle.trim() || isGenerating}
+              disabled={!taskTitle.trim()}
               className="bg-gradient-to-r from-pink-300 to-orange-300 dark:from-pink-400 dark:to-orange-400 hover:from-pink-400 hover:to-orange-400 dark:hover:from-pink-500 dark:hover:to-orange-500 text-white rounded-xl shadow-lg"
             >
-              {isGenerating ? (
-                <motion.div
-                  className="flex items-center gap-2"
-                  animate={{ opacity: [1, 0.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Creating Planet...
-                </motion.div>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Plant Star
-                </>
-              )}
+              <Sparkles className="h-4 w-4 mr-2" />
+              Plant Star
             </Button>
           </div>
         </form>
-
-        {/* Floating sparkles animation */}
-        {isGenerating && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute text-purple-400"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  y: [0, -50, 0],
-                  opacity: [0, 1, 0],
-                  rotate: [0, 360],
-                  scale: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              >
-                ✨
-              </motion.div>
-            ))}
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );

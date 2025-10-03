@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Coffee, Music } from 'lucide-react';
 import grandmaIdleImage from 'figma:asset/6c1cd635abe9663455c79ffda89de0ed099ca521.png';
