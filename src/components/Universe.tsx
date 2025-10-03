@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Plus, Edit } from 'lucide-react';
 import { Planet } from './Planet';
 import { TaskDetail } from './TaskDetail';
-import { GrandmaJuaner } from './GrandmaJuaner';
+import { GrandmaGrace } from './GrandmaGrace';
 import { CreateTaskDialog, ImportanceLevel } from './CreateTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
 import { Button } from './ui/button';
@@ -304,8 +304,8 @@ export function Universe() {
         </Button>
       </motion.div>
 
-      {/* Grandma Juan-er */}
-      <GrandmaJuaner 
+      {/* Grandma Grace */}
+      <GrandmaGrace 
         message={grandmaMessage} 
         showCelebration={showCelebration}
       />

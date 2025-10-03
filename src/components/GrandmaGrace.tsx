@@ -5,7 +5,7 @@ import grandmaIdleImage from 'figma:asset/6c1cd635abe9663455c79ffda89de0ed099ca5
 import grandmaCheesecakeImage from 'figma:asset/caafb2a517ec7c01684578f6eb71548493ceee82.png';
 import grandmaDancingImage from 'figma:asset/6d8d890cb2aa0cd204d44888fce4a88371fed04f.png';
 
-interface GrandmaJuanerProps {
+interface GrandmaGraceProps {
   message: string | null;
   showCelebration?: boolean;
 }
@@ -36,7 +36,7 @@ const CLICKABLE_MESSAGES = [
   "Between you and me, watching you complete planets is better than any TV show! 📺",
 ];
 
-export function GrandmaJuaner({ message, showCelebration = false }: GrandmaJuanerProps) {
+export function GrandmaGrace({ message, showCelebration = false }: GrandmaGraceProps) {
   const [currentState, setCurrentState] = useState<keyof typeof GRANDMA_STATES>('idle');
   const [idleMessage, setIdleMessage] = useState<string | null>(null);
   const [showIdleMessage, setShowIdleMessage] = useState(false);
@@ -125,7 +125,7 @@ export function GrandmaJuaner({ message, showCelebration = false }: GrandmaJuane
         <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center shadow-lg border-4 border-white/20 overflow-hidden ${showCelebration ? 'shadow-yellow-400/50' : ''}`}>
           <img 
             src={GRANDMA_STATES[currentState]}
-            alt="Grandma Juan-er"
+            alt="Grandma Grace"
             className="w-full h-full object-cover"
           />
         </div>
