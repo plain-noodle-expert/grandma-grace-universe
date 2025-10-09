@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Simple Vercel Serverless function that proxies task-breakdown requests to OpenRouter
+// Enhanced Vercel Serverless function with verbose logging and clearer error bodies
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -12,12 +12,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const MODEL = process.env.OPENROUTER_MODEL || process.env.VITE_OPENROUTER_MODEL || 'microsoft/mai-ds-r1:free';
 
   if (!OPENROUTER_API_KEY) {
+    console.error('Missing OPENROUTER_API_KEY in environment');
     res.status(500).json({ error: 'Server misconfiguration: missing API key' });
     return;
   }
 
   try {
     const { taskTitle, importance } = req.body;
+    console.log('generate-task-breakdown called with', { taskTitle, importance, model: MODEL, base: OPENROUTER_BASE });
+
+    // Do not log the API key value, but confirm presence
+    console.log('OPENROUTER_API_KEY is present:', !!OPENROUTER_API_KEY);
 
     // Build messages asking the model to return JSON with a steps array
     const system = {
@@ -37,7 +42,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       temperature: 0.7,
     };
 
-    const r = await fetch(`${OPENROUTER_BASE.replace(/\/$/, '')}/chat/completions`, {
+    const endpoint = `${OPENROUTER_BASE.replace(/\/$/, '')}/chat/completions`;
+    console.log('Calling OpenRouter at', endpoint, 'with model', MODEL);
+
+    const r = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +56,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!r.ok) {
       const text = await r.text();
-      res.status(r.status).json({ error: `OpenRouter error: ${r.status}`, detail: text });
+      console.error('OpenRouter returned non-OK:', r.status, text);
+      // Return detailed info to help debugging (safe: doesn't expose secret)
+      res.status(r.status).json({ error: `OpenRouter error: ${r.status}`, status: r.status, detail: text });
       return;
     }
 
@@ -68,7 +78,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       parsed = JSON.parse(content);
     } catch (e) {
       // fallback: split lines that look like steps
-      const lines = content.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      console.warn('Model output not JSON, falling back to line-splitting. Raw content:', content);
+      const lines = content.split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
       parsed = { steps: lines, motivation: '' };
     }
 
@@ -78,7 +89,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json({ steps, motivation, priority: importance || 'medium' });
   } catch (error: any) {
-    console.error('Serverless function error:', error);
-    res.status(500).json({ error: error?.message || String(error) });
+    console.error('Serverless function error:', error?.stack || error);
+    // Return error details for debugging
+    res.status(500).json({ error: error?.message || String(error), stack: error?.stack || null });
   }
 }
